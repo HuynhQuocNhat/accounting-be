@@ -9,7 +9,6 @@ use App\Services\Actions\Goods\GetListGoodsBySearchAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use App\Http\Resources\GoodCollection;
 
 class GoodController extends Controller
 {

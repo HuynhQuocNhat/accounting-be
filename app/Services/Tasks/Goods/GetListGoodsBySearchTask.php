@@ -4,7 +4,6 @@ namespace App\Services\Tasks\Goods;
 
 use App\Http\Resources\GoodCollection;
 use App\Models\Good;
-use Illuminate\Database\Eloquent\Collection;
 
 class GetListGoodsBySearchTask
 {
@@ -27,16 +26,24 @@ class GetListGoodsBySearchTask
     {
         $goods = Good::notYetDeleted();
         $offset = $this->params['offset'] ?? 0;
-        $limit = $this->params['limit'] ?? 10;
+        $limit = $this->params['limit'] ?? 25;
 
         if (isset($this->params['code']) && $this->params['code']) {
             $codes = array_filter(array_map('trim', explode(',', $this->params['code'])));
-            $goods->whereIn('code', array_filter($codes));
+            $goods->where(function ($query) use ($codes) {
+                foreach ($codes as $code) {
+                    $query->orWhere('code', 'like', '%' . $code . '%');
+                }
+            });
         }
 
         if (isset($this->params['name']) && $this->params['name']) {
             $names = array_filter(array_map('trim', explode(',', $this->params['name'])));
-            $goods->whereIn('name', array_filter($names));
+            $goods->where(function ($query) use ($names) {
+                foreach ($names as $name) {
+                    $query->orWhere('name', 'like', '%' . $name . '%');
+                }
+            });
         }
 
         if (isset($this->params['unit_of_good_ids']) && $this->params['unit_of_good_ids']) {
