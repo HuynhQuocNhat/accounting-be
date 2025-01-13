@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Requests\AddGoodRequest;
+use App\Http\Requests\UpdateGoodsRequest;
 use App\Models\Good;
 use App\Services\Actions\Goods\AddNewGoodsAction;
+use App\Services\Actions\Goods\DeleteGoodsAction;
 use App\Services\Actions\Goods\GetListGoodsBySearchAction;
+use App\Services\Actions\Goods\UpdateGoodsAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -73,9 +76,28 @@ class GoodController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Good $good)
+    public function update(UpdateGoodsRequest $request, Good $good)
     {
-        //
+        try {
+            if ($good) {
+                DB::beginTransaction();
+                $result = (new UpdateGoodsAction())->setGoods($good)
+                    ->setData($request->all(['code', 'name', 'unit_of_good_id']))
+                    ->handle();
+
+                if ($result) {
+                    DB::commit();
+                    return $this->response("Đã sửa thông tin Hàng {$request->post('name')} .", 200);
+                }
+            }
+
+            DB::rollBack();
+            return $this->response('Something wrong!!!', 500);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->response('Something wrong!!!', 500);
+        }
+
     }
 
     /**
@@ -83,6 +105,24 @@ class GoodController extends Controller
      */
     public function destroy(Good $good)
     {
-        //
+        try {
+            DB::beginTransaction();
+            if ($good) {
+                $goodsName = $good->name;
+                $result = (new DeleteGoodsAction())->setGoods($good)
+                    ->handle();
+                if ($result) {
+                    DB::commit();
+                    return $this->response("Đã Xóa Hàng {$goodsName} !!!", 200);
+                }
+            }
+
+            DB::rollBack();
+            return $this->response('Something wrong!!!', 500);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->response('Something wrong!!!', 500);
+        }
+
     }
 }
