@@ -11,6 +11,12 @@ class Good extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        "code",
+        "name",
+        "unit_of_good_id"
+    ];
+
     public function unitOfGood(): BelongsTo
     {
         return $this->belongsTo(UnitOfGood::class);
